@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Health Timeline · 健康时间轴 — 家人化验单一键归档</title>
+<style>
+  :root {
+    --teal: #2D9596;
+    --teal-deep: #1F6D6E;
+    --teal-soft: #9AD0C2;
+    --cream: #F8FBF8;
+    --ink: #1B2A2B;
+    --gray: #5C6B6C;
+    --line: #E2EBE9;
+    --warn: #E8804C;
+    --good: #5BB97B;
+    --pill: #F1FADA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: -apple-system, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif; color: var(--ink); background: var(--cream); line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Nav */
+  nav { position: sticky; top: 0; z-index: 50; background: rgba(248, 251, 248, 0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .nav-inner { max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px; }
+  .logo-dot { width: 26px; height: 26px; border-radius: 8px; background: var(--teal); display: grid; place-items: center; color: #fff; font-size: 14px; }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--gray); }
+  .nav-links a:hover { color: var(--teal); }
+  .nav-cta { background: var(--teal); color: #fff; padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; }
+
+  /* Hero */
+  .hero { max-width: 1200px; margin: 0 auto; padding: 80px 24px 60px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center; }
+  .hero-tag { display: inline-block; background: var(--pill); color: var(--teal-deep); padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+  .hero h1 { font-size: 52px; line-height: 1.15; font-weight: 800; letter-spacing: -1px; margin-bottom: 20px; }
+  .hero h1 span { color: var(--teal); }
+  .hero p { font-size: 17px; color: var(--gray); margin-bottom: 32px; max-width: 480px; }
+  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn { padding: 13px 28px; border-radius: 999px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-primary:hover { background: var(--teal-deep); transform: translateY(-1px); }
+  .btn-ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+  /* Hero phone mockup */
+  .hero { position: relative; }
+  .hero-3d {
+    position: absolute; right: -40px; top: 0;
+    width: 360px; height: 360px;
+    border-radius: 40px;
+    background: linear-gradient(135deg, #2D9596 0%, #1F6D6E 40%, #9AD0C2 70%, #F8FBF8 100%);
+    background-size: cover;
+    opacity: 0.92;
+    box-shadow: 0 30px 70px -20px rgba(45,149,150,0.45), 0 8px 24px rgba(0,0,0,0.06);
+    transform: rotate(-4deg);
+    z-index: 0;
+    animation: heroFloat 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .hero-3d::after{
+    content:'';position:absolute;inset:0;border-radius:40px;
+    background:linear-gradient(135deg,rgba(45,149,150,0.05),rgba(255,255,255,0) 50%);
+  }
+  @keyframes heroFloat{
+    0%,100%{transform:rotate(-4deg) translateY(0);}
+    50%{transform:rotate(-2deg) translateY(-12px);}
+  }
+  .hero-orb{
+    position:absolute;border-radius:50%;
+    filter:blur(40px);opacity:0.5;pointer-events:none;z-index:0;
+  }
+  .hero-orb-1{ width:240px;height:240px;background:#2D9596;left:-60px;top:-40px;animation:orbDrift 14s ease-in-out infinite;}
+  .hero-orb-2{ width:180px;height:180px;background:#E8804C;right:30%;bottom:-40px;opacity:0.35;animation:orbDrift 18s ease-in-out infinite reverse;}
+  @keyframes orbDrift{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(20px,-20px) scale(1.08);}
+  }
+  .phone {
+    position: relative; z-index: 2;
+    width: 280px; height: 560px; margin: 0 auto; background: #fff; border-radius: 36px;
+    box-shadow: 0 30px 60px rgba(45, 149, 150, 0.18), 0 0 0 8px #1B2A2B, 0 0 0 9px #2D9596;
+    padding: 18px; overflow: hidden;
+    transform: perspective(1400px) rotateY(-8deg) rotateX(4deg);
+    transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  }
+  .phone:hover{ transform: perspective(1400px) rotateY(0deg) rotateX(0deg) translateY(-4px); }
+  .phone::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #1B2A2B; border-radius: 0 0 14px 14px; }
+  .phone-hd { display: flex; justify-content: space-between; padding: 6px 8px 14px; font-size: 11px; color: var(--gray); }
+  .phone-title { font-weight: 700; font-size: 17px; padding: 6px 4px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .phone-card { background: var(--cream); border-radius: 14px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--line); }
+  .phone-card-hd { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); margin-bottom: 6px; }
+  .phone-card-name { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  .phone-line { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .phone-line .high { color: var(--warn); font-weight: 700; }
+  .phone-line .ok { color: var(--good); font-weight: 700; }
+  .phone-trend { background: linear-gradient(135deg, var(--teal-soft), var(--pill)); border-radius: 12px; padding: 12px; }
+  .phone-trend-title { font-size: 12px; font-weight: 700; color: var(--teal-deep); margin-bottom: 8px; }
+  .phone-trend svg { width: 100%; height: 60px; }
+
+  /* Section common */
+  section { padding: 80px 24px; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .sec-tag { display: inline-block; background: var(--pill); color: var(--teal-deep); padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 14px; }
+  .sec-title { font-size: 36px; font-weight: 800; line-height: 1.2; margin-bottom: 14px; letter-spacing: -0.5px; }
+  .sec-sub { font-size: 16px; color: var(--gray); max-width: 600px; margin-bottom: 48px; }
+
+  /* Pain section */
+  .pain { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .pain-quote { background: var(--cream); border-left: 4px solid var(--teal); padding: 24px 28px; border-radius: 0 12px 12px 0; font-size: 18px; line-height: 1.7; max-width: 760px; margin-bottom: 36px; color: var(--ink); }
+  .pain-quote em { color: var(--warn); font-style: normal; font-weight: 600; }
+  .pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .pain-card { padding: 24px; border-radius: 16px; border: 1px solid var(--line); background: var(--cream); }
+  .pain-card-emoji { font-size: 28px; margin-bottom: 10px; }
+  .pain-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .pain-card p { font-size: 14px; color: var(--gray); }
+
+  /* Steps */
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .step { background: #fff; border-radius: 20px; padding: 32px 26px; border: 1px solid var(--line); transition: all 0.3s; }
+  .step:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(45, 149, 150, 0.10); border-color: var(--teal-soft); }
+  .step-num { width: 38px; height: 38px; border-radius: 12px; background: var(--teal); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 17px; margin-bottom: 18px; }
+  .step h3 { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+  .step p { color: var(--gray); font-size: 14.5px; }
+
+  /* TRY 真实交互区 */
+  .try { background: linear-gradient(180deg, #fff 0%, var(--cream) 100%); }
+  .try-wrap { background: #fff; border-radius: 28px; padding: 40px; border: 1px solid var(--line); box-shadow: 0 30px 60px rgba(45, 149, 150, 0.06); }
+  .try-tabs { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+  .try-tab { padding: 9px 18px; border-radius: 999px; background: var(--cream); border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--gray); cursor: pointer; transition: all 0.2s; }
+  .try-tab.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+  .try-stage { min-height: 460px; }
+  .try-stage > div { display: none; }
+  .try-stage > div.active { display: block; animation: fade 0.4s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Stage 1: 上传 */
+  .upload-box { border: 2px dashed var(--teal-soft); border-radius: 18px; padding: 50px 24px; text-align: center; background: var(--cream); cursor: pointer; transition: all 0.2s; }
+  .upload-box:hover { border-color: var(--teal); background: #fff; }
+  .upload-icon { font-size: 48px; margin-bottom: 14px; }
+  .upload-box h4 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .upload-box p { color: var(--gray); font-size: 13.5px; }
+  .upload-hint { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+  .upload-hint span { background: var(--pill); color: var(--teal-deep); font-size: 12px; padding: 4px 10px; border-radius: 999px; }
+  .upload-preview { display: none; margin-top: 24px; }
+  .upload-preview img { width: 100%; max-width: 380px; border-radius: 14px; border: 1px solid var(--line); display: block; margin: 0 auto; }
+  .ocr-loader { display: none; margin-top: 24px; padding: 20px; background: var(--cream); border-radius: 14px; text-align: center; }
+  .ocr-loader p { color: var(--teal-deep); font-weight: 600; margin-bottom: 12px; }
+  .ocr-bar { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .ocr-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal-soft), var(--teal)); width: 0; transition: width 0.4s; border-radius: 999px; }
+
+  /* Stage 2: 结构化结果 */
+  .result-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; align-items: start; }
+  .result-card { background: var(--cream); border-radius: 18px; padding: 24px; border: 1px solid var(--line); }
+  .result-hd { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .result-hd h4 { font-size: 17px; font-weight: 700; }
+  .result-hd p { font-size: 12px; color: var(--gray); margin-top: 3px; }
+  .result-hd .badge { background: var(--good); color: #fff; font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
+  .result-row { display: grid; grid-template-columns: 1.6fr 1fr 1fr 80px; gap: 12px; padding: 12px 0; border-bottom: 1px dashed var(--line); align-items: center; font-size: 13.5px; }
+  .result-row:last-child { border-bottom: none; }
+  .result-row .name { font-weight: 600; }
+  .result-row .ref { color: var(--gray); font-size: 12px; }
+  .result-row .val { font-weight: 700; font-family: "SF Mono", Menlo, monospace; }
+  .result-row .tag { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-align: center; }
+  .tag-high { background: rgba(232, 128, 76, 0.15); color: var(--warn); }
+  .tag-low { background: rgba(91, 185, 123, 0.15); color: var(--good); }
+  .tag-ok { background: rgba(45, 149, 150, 0.10); color: var(--teal); }
+
+  .explain-card { background: linear-gradient(135deg, var(--pill), #fff); border-radius: 18px; padding: 24px; border: 1px solid var(--teal-soft); }
+  .explain-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--teal-deep); display: flex; align-items: center; gap: 8px; }
+  .explain-item { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .explain-item:last-child { border-bottom: none; }
+  .explain-item strong { font-size: 13px; color: var(--ink); display: block; margin-bottom: 4px; }
+  .explain-item p { font-size: 12.5px; color: var(--gray); line-height: 1.6; }
+  .disclaimer { margin-top: 14px; padding: 10px 12px; background: rgba(232, 128, 76, 0.08); border-radius: 8px; font-size: 11.5px; color: var(--warn); line-height: 1.5; }
+
+  /* Stage 3: 时间轴 */
+  .timeline-wrap { padding: 8px 4px; }
+  .timeline-hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .timeline-hd h4 { font-size: 18px; font-weight: 700; }
+  .indicator-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ind-pill { padding: 7px 14px; border-radius: 999px; background: var(--cream); border: 1px solid var(--line); font-size: 12.5px; cursor: pointer; font-weight: 600; color: var(--gray); transition: all 0.2s; }
+  .ind-pill.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+  .chart-card { background: var(--cream); border-radius: 18px; padding: 28px; border: 1px solid var(--line); }
+  .chart-svg { width: 100%; height: 220px; }
+  .chart-meta { display: flex; gap: 24px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .chart-meta-item { font-size: 13px; }
+  .chart-meta-item .lbl { color: var(--gray); font-size: 11.5px; display: block; margin-bottom: 2px; }
+  .chart-meta-item .v { font-weight: 700; font-size: 16px; color: var(--ink); }
+  .chart-meta-item .v.up { color: var(--warn); }
+  .chart-meta-item .v.down { color: var(--good); }
+
+  .timeline-list { margin-top: 24px; }
+  .tl-event { display: grid; grid-template-columns: 90px 1fr; gap: 18px; padding: 14px 0; border-bottom: 1px dashed var(--line); align-items: center; }
+  .tl-date { font-size: 13px; color: var(--gray); font-weight: 600; }
+  .tl-content { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .tl-source { font-weight: 600; font-size: 14px; }
+  .tl-val { font-family: "SF Mono", Menlo, monospace; font-weight: 700; font-size: 14px; color: var(--teal-deep); }
+  .tl-delta { font-size: 12px; padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+  .tl-delta.up { background: rgba(232, 128, 76, 0.15); color: var(--warn); }
+  .tl-delta.down { background: rgba(91, 185, 123, 0.15); color: var(--good); }
+  .tl-delta.flat { background: rgba(45, 149, 150, 0.10); color: var(--teal); }
+
+  /* Stage 4: 自然语言问 */
+  .qa-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+  .qa-suggest { background: var(--cream); border-radius: 18px; padding: 22px; border: 1px solid var(--line); }
+  .qa-suggest h5 { font-size: 13px; color: var(--gray); margin-bottom: 14px; font-weight: 700; letter-spacing: 0.5px; }
+  .qa-q { display: block; padding: 12px 14px; background: #fff; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s; line-height: 1.5; }
+  .qa-q:hover { border-color: var(--teal); color: var(--teal-deep); transform: translateX(2px); }
+  .qa-chat { background: var(--cream); border-radius: 18px; padding: 24px; border: 1px solid var(--line); min-height: 380px; display: flex; flex-direction: column; }
+  .qa-msgs { flex: 1; display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+  .qa-msg { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.6; animation: fade 0.3s; }
+  .qa-msg.user { align-self: flex-end; background: var(--teal); color: #fff; border-bottom-right-radius: 4px; }
+  .qa-msg.ai { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .qa-msg.ai strong { color: var(--teal-deep); }
+  .qa-input { display: flex; gap: 8px; }
+  .qa-input input { flex: 1; padding: 12px 16px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; outline: none; background: #fff; font-family: inherit; }
+  .qa-input input:focus { border-color: var(--teal); }
+  .qa-input button { background: var(--teal); color: #fff; border: none; padding: 0 22px; border-radius: 999px; font-weight: 600; cursor: pointer; font-size: 14px; }
+
+  /* Family / 多成员 */
+  .family { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .family-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  .family-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .member-card { background: var(--cream); border-radius: 18px; padding: 20px; border: 1px solid var(--line); transition: all 0.2s; }
+  .member-card:hover { border-color: var(--teal); transform: translateY(-2px); }
+  .member-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .member-avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--teal-soft); display: grid; place-items: center; font-size: 20px; }
+  .member-name { font-weight: 700; font-size: 15px; }
+  .member-role { font-size: 11.5px; color: var(--gray); }
+  .member-stat { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+  .member-stat .label { color: var(--gray); }
+  .member-stat .v { font-weight: 700; }
+  .member-stat .v.warn { color: var(--warn); }
+  .member-stat .v.good { color: var(--good); }
+
+  /* 隐私&合规 */
+  .privacy { background: var(--cream); }
+  .privacy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .privacy-card { background: #fff; border-radius: 18px; padding: 28px; border: 1px solid var(--line); }
+  .privacy-card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--pill); display: grid; place-items: center; font-size: 22px; margin-bottom: 14px; }
+  .privacy-card h4 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .privacy-card p { font-size: 14px; color: var(--gray); }
+
+  /* 价格 */
+  .pricing { background: #fff; border-top: 1px solid var(--line); }
+  .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 800px; margin: 0 auto; }
+  .price-card { background: var(--cream); border-radius: 22px; padding: 36px 30px; border: 1px solid var(--line); }
+  .price-card.featured { background: linear-gradient(180deg, var(--teal-deep), var(--teal)); color: #fff; border: none; position: relative; }
+  .price-card.featured::before { content: '推荐给家人'; position: absolute; top: 14px; right: 14px; background: #fff; color: var(--teal-deep); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+  .price-name { font-size: 14px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 8px; opacity: 0.85; }
+  .price-num { font-size: 42px; font-weight: 800; margin-bottom: 4px; }
+  .price-num small { font-size: 14px; font-weight: 500; opacity: 0.7; }
+  .price-feat { list-style: none; margin: 24px 0; padding: 0; }
+  .price-feat li { padding: 7px 0; font-size: 14px; display: flex; gap: 8px; }
+  .price-feat li::before { content: '✓'; font-weight: 700; }
+  .price-cta { display: block; text-align: center; padding: 12px; border-radius: 999px; background: var(--teal); color: #fff; font-weight: 600; cursor: pointer; border: none; width: 100%; font-size: 14.5px; }
+  .price-card.featured .price-cta { background: #fff; color: var(--teal-deep); }
+
+  /* CTA */
+  .cta-section { background: var(--teal-deep); color: #fff; text-align: center; }
+  .cta-section h2 { font-size: 38px; font-weight: 800; margin-bottom: 14px; letter-spacing: -0.5px; }
+  .cta-section p { font-size: 16px; opacity: 0.85; margin-bottom: 28px; max-width: 540px; margin-left: auto; margin-right: auto; }
+  .cta-section .btn-primary { background: #fff; color: var(--teal-deep); }
+  .cta-section .btn-primary:hover { background: var(--cream); }
+
+  /* Footer */
+  footer { background: var(--ink); color: rgba(255, 255, 255, 0.6); padding: 36px 24px; text-align: center; font-size: 13.5px; }
+  footer strong { color: #fff; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ink); color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 14px; opacity: 0; transition: all 0.4s; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 50px 20px 40px; gap: 40px; }
+    .hero h1 { font-size: 38px; }
+    .nav-links { display: none; }
+    .pain-grid, .steps-grid, .privacy-grid, .price-grid { grid-template-columns: 1fr; }
+    .result-grid, .qa-wrap, .family-grid { grid-template-columns: 1fr; }
+    .try-wrap { padding: 24px; }
+    section { padding: 56px 20px; }
+    .sec-title, .cta-section h2 { font-size: 28px; }
+    .result-row { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .result-row .ref { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-dot">⏱</div>
+      <span>Health Timeline</span>
+    </div>
+    <div class="nav-links">
+      <a href="#pain">为什么需要</a>
+      <a href="#how">怎么用</a>
+      <a href="#try">立刻试试</a>
+      <a href="#family">家庭档案</a>
+      <a href="#price">价格</a>
+    </div>
+    <a class="nav-cta" href="#try">免费上传第一张</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="hero-3d"></div>
+  <div>
+    <span class="hero-tag">⏱  健康时间轴 · MVP 体验版</span>
+    <h1>把家人那一抽屉的<br/>化验单<span>归档成一条时间线</span></h1>
+    <p>拍照上传 → AI 自动结构化 → 同一指标跨年份对比，再用大白话告诉你"上次比这次好还是坏"。给爸妈、自己、孩子各建一份，看病时一翻就有。</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="document.getElementById('try').scrollIntoView({behavior:'smooth'})">立刻上传一张试试</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">看怎么用</button>
+    </div>
+  </div>
+  <div class="phone">
+    <div class="phone-hd"><span>9:41</span><span>● ● ●</span></div>
+    <div class="phone-title"><span>👨 爸爸 · 健康档案</span><span style="font-size:14px;color:var(--gray);">+</span></div>
+    <div class="phone-card">
+      <div class="phone-card-hd"><span>2026.06.10 · 体检中心</span><span>📷</span></div>
+      <div class="phone-card-name">血脂四项</div>
+      <div class="phone-line"><span>总胆固醇</span><span class="high">5.8 ↑</span></div>
+      <div class="phone-line"><span>低密度脂蛋白</span><span class="high">3.6 ↑</span></div>
+      <div class="phone-line"><span>甘油三酯</span><span class="ok">1.4 ✓</span></div>
+    </div>
+    <div class="phone-card">
+      <div class="phone-card-hd"><span>2025.12.18 · 三甲医院</span><span>📋</span></div>
+      <div class="phone-card-name">血脂四项</div>
+      <div class="phone-line"><span>总胆固醇</span><span class="high">5.4 ↑</span></div>
+    </div>
+    <div class="phone-trend">
+      <div class="phone-trend-title">📈 总胆固醇 · 近 4 次趋势</div>
+      <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+        <polyline points="10,40 70,30 130,25 190,15" fill="none" stroke="#1F6D6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10" cy="40" r="3" fill="#1F6D6E"/>
+        <circle cx="70" cy="30" r="3" fill="#1F6D6E"/>
+        <circle cx="130" cy="25" r="3" fill="#1F6D6E"/>
+        <circle cx="190" cy="15" r="3.5" fill="#E8804C"/>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- Pain -->
+<section class="pain" id="pain">
+  <div class="container">
+    <span class="sec-tag">真实场景</span>
+    <h2 class="sec-title">为什么我们要做这个产品</h2>
+    <div class="pain-quote">
+      "我爸妈攒了一抽屉化验单，<em>看不懂数字</em>，<em>也不知道和上次比是好是坏</em>。<br/>下次去医院，医生让把以前结果拿出来——只能现场翻照片。"
+    </div>
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-card-emoji">🗂️</div>
+        <h4>记录散落在 7 个地方</h4>
+        <p>微信收藏、相册、抽屉、医院 App、体检小程序、邮件、纸质档案。每次想找，都要翻一遍。</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-emoji">😵‍💫</div>
+        <h4>看不懂的"参考范围"</h4>
+        <p>"5.8 mmol/L"是高还是低？"偏高 0.4"要不要紧？医生忙没空解释，自己百度又怕越查越焦虑。</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-emoji">📉</div>
+        <h4>看不见"趋势"</h4>
+        <p>单次数据没意义，连成线才有意义。爸的血压是越来越好还是越来越差？散落的纸单根本拼不起来。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How -->
+<section id="how">
+  <div class="container">
+    <span class="sec-tag">三步上手</span>
+    <h2 class="sec-title">从一张化验单，到一条健康时间轴</h2>
+    <p class="sec-sub">不用学任何东西。打开网页，拍照，剩下的交给 AI。</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>📷 拍照上传</h3>
+        <p>手机或电脑直接传，纸质化验单、电子报告 PDF、体检小程序截图都行。一张张传，也支持一次传一沓。</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>🤖 AI 结构化</h3>
+        <p>OCR 识别项目名、数值、单位、参考范围，自动判断偏高/偏低/正常，再用大白话给一句"非诊断"的通俗解释。</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>📈 时间轴归档</h3>
+        <p>同一指标跨年份连成趋势图，按家庭成员分档案。下次去医院，掏出手机就能给医生看 5 年变化。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRY -->
+<section class="try" id="try">
+  <div class="container">
+    <span class="sec-tag">立刻试试</span>
+    <h2 class="sec-title">不用注册，下一秒就能体验</h2>
+    <p class="sec-sub">点下面的标签，跟着走一遍完整流程。第一步可以传你自己的化验单照片（不会上传到任何服务器，纯本地预览）。</p>
+    <div class="try-wrap">
+      <div class="try-tabs">
+        <div class="try-tab active" data-stage="1">① 上传化验单</div>
+        <div class="try-tab" data-stage="2">② 看 AI 解读</div>
+        <div class="try-tab" data-stage="3">③ 看时间趋势</div>
+        <div class="try-tab" data-stage="4">④ 自然语言问 AI</div>
+      </div>
+
+      <div class="try-stage">
+        <!-- Stage 1: Upload -->
+        <div class="stage stage-1 active">
+          <div class="upload-box" id="uploadBox">
+            <div class="upload-icon">📷</div>
+            <h4>把化验单照片拖进来，或点击上传</h4>
+            <p>支持 jpg / png / pdf · 仅在你的浏览器本地预览</p>
+            <div class="upload-hint">
+              <span>纸质化验单</span>
+              <span>电子报告 PDF</span>
+              <span>体检小程序截图</span>
+              <span>多张一起传</span>
+            </div>
+            <input type="file" id="fileInput" accept="image/*,application/pdf" style="display:none" />
+          </div>
+          <div class="upload-preview" id="uploadPreview">
+            <img id="previewImg" alt="化验单预览" />
+          </div>
+          <div class="ocr-loader" id="ocrLoader">
+            <p id="ocrText">🤖 正在识别字段…</p>
+            <div class="ocr-bar"><div class="ocr-bar-fill" id="ocrBar"></div></div>
+          </div>
+        </div>
+
+        <!-- Stage 2: 结构化结果 + 通俗解读 -->
+        <div class="stage stage-2">
+          <div class="result-grid">
+            <div class="result-card">
+              <div class="result-hd">
+                <div>
+                  <h4>血脂四项 · 体检报告</h4>
+                  <p>2026.06.10 · 上海市某体检中心 · 张爸爸</p>
+                </div>
+                <span class="badge">已识别 4 项</span>
+              </div>
+              <div class="result-row">
+                <span class="name">总胆固醇 (TC)</span>
+                <span class="ref">参考 &lt; 5.2</span>
+                <span class="val">5.8</span>
+                <span class="tag tag-high">↑ 偏高</span>
+              </div>
+              <div class="result-row">
+                <span class="name">低密度脂蛋白 (LDL-C)</span>
+                <span class="ref">参考 &lt; 3.4</span>
+                <span class="val">3.6</span>
+                <span class="tag tag-high">↑ 偏高</span>
+              </div>
+              <div class="result-row">
+                <span class="name">高密度脂蛋白 (HDL-C)</span>
+                <span class="ref">参考 &gt; 1.0</span>
+                <span class="val">1.32</span>
+                <span class="tag tag-ok">✓ 正常</span>
+              </div>
+              <div class="result-row">
+                <span class="name">甘油三酯 (TG)</span>
+                <span class="ref">参考 &lt; 1.7</span>
+                <span class="val">1.4</span>
+                <span class="tag tag-ok">✓ 正常</span>
+              </div>
+            </div>
+            <div class="explain-card">
+              <h4>💬 大白话解读</h4>
+              <div class="explain-item">
+                <strong>"总胆固醇 5.8" 是什么意思？</strong>
+                <p>反映血液里"油"的总量。理想值 &lt; 5.2，您这次 5.8 略偏高，主要看下面 LDL-C 是不是也高。</p>
+              </div>
+              <div class="explain-item">
+                <strong>低密度脂蛋白 3.6 偏高需要紧张吗？</strong>
+                <p>LDL-C 是"坏胆固醇"，长期偏高会增加血管负担。建议关注饮食（减少动物内脏、油炸）+ 复查趋势。</p>
+              </div>
+              <div class="explain-item">
+                <strong>这次比上次好还是坏？</strong>
+                <p>对比 2025.12.18 总胆固醇 5.4 → 5.8，<strong style="color:var(--warn)">上升了 0.4</strong>。点"时间趋势"看完整曲线。</p>
+              </div>
+              <div class="disclaimer">⚠️ 以上为信息辅助，不构成医疗诊断。具体决策请遵循医生建议。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage 3: 时间轴/趋势 -->
+        <div class="stage stage-3">
+          <div class="timeline-wrap">
+            <div class="timeline-hd">
+              <h4>📈 张爸爸 · 指标趋势</h4>
+              <div class="indicator-pills">
+                <div class="ind-pill active" data-ind="tc">总胆固醇</div>
+                <div class="ind-pill" data-ind="ldl">低密度脂蛋白</div>
+                <div class="ind-pill" data-ind="bp">收缩压</div>
+                <div class="ind-pill" data-ind="glu">空腹血糖</div>
+              </div>
+            </div>
+            <div class="chart-card">
+              <svg class="chart-svg" id="chartSvg" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
+              <div class="chart-meta" id="chartMeta"></div>
+            </div>
+            <div class="timeline-list" id="timelineList"></div>
+          </div>
+        </div>
+
+        <!-- Stage 4: AI 问答 -->
+        <div class="stage stage-4">
+          <div class="qa-wrap">
+            <div class="qa-suggest">
+              <h5>💡 试试这样问 AI</h5>
+              <a class="qa-q" data-q="我爸的血糖最近怎么样？">我爸的血糖最近怎么样？</a>
+              <a class="qa-q" data-q="总胆固醇 5.8 要紧吗？">总胆固醇 5.8 要紧吗？</a>
+              <a class="qa-q" data-q="这两年血脂变化趋势？">这两年血脂变化趋势？</a>
+              <a class="qa-q" data-q="下次去医院该重点关注哪些指标？">下次去医院该重点关注哪些指标？</a>
+            </div>
+            <div class="qa-chat">
+              <div class="qa-msgs" id="qaMsgs">
+                <div class="qa-msg ai">您好，我已读取张爸爸 2024-2026 共 7 次化验记录。<br/>左边有几个常问问题，也可以直接问我。<br/><strong>提醒：</strong>我只做信息汇总和通俗解读，不替代医生诊断。</div>
+              </div>
+              <div class="qa-input">
+                <input id="qaInput" placeholder="问点什么…比如'我妈的尿酸最近高不高'" />
+                <button id="qaSend">发送</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Family -->
+<section class="family" id="family">
+  <div class="container">
+    <div class="family-grid">
+      <div>
+        <span class="sec-tag">家庭健康档案</span>
+        <h2 class="sec-title">一份给自己，一份给爸妈，一份给孩子</h2>
+        <p class="sec-sub">每位家人独立档案，用药史、过敏、慢病标签都能维护。本地优先存储，敏感字段端到端加密——只有你和你授权的家人能看。</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary" onclick="document.getElementById('try').scrollIntoView({behavior:'smooth'})">添加我的家人</button>
+        </div>
+      </div>
+      <div class="family-cards">
+        <div class="member-card">
+          <div class="member-hd">
+            <div class="member-avatar">👨</div>
+            <div><div class="member-name">张爸爸</div><div class="member-role">62 岁 · 高血脂</div></div>
+          </div>
+          <div class="member-stat"><span class="label">总胆固醇</span><span class="v warn">5.8 ↑</span></div>
+          <div class="member-stat"><span class="label">最近一次</span><span class="v">06-10</span></div>
+          <div class="member-stat"><span class="label">档案条数</span><span class="v">7</span></div>
+        </div>
+        <div class="member-card">
+          <div class="member-hd">
+            <div class="member-avatar">👩</div>
+            <div><div class="member-name">张妈妈</div><div class="member-role">58 岁 · 体检正常</div></div>
+          </div>
+          <div class="member-stat"><span class="label">空腹血糖</span><span class="v good">5.2 ✓</span></div>
+          <div class="member-stat"><span class="label">最近一次</span><span class="v">04-22</span></div>
+          <div class="member-stat"><span class="label">档案条数</span><span class="v">5</span></div>
+        </div>
+        <div class="member-card">
+          <div class="member-hd">
+            <div class="member-avatar">🧑</div>
+            <div><div class="member-name">我自己</div><div class="member-role">26 岁</div></div>
+          </div>
+          <div class="member-stat"><span class="label">尿酸</span><span class="v warn">432 ↑</span></div>
+          <div class="member-stat"><span class="label">最近一次</span><span class="v">05-15</span></div>
+          <div class="member-stat"><span class="label">档案条数</span><span class="v">3</span></div>
+        </div>
+        <div class="member-card" style="border-style:dashed; cursor:pointer;" onclick="showToast('在 demo 中可继续添加家庭成员～')">
+          <div class="member-hd">
+            <div class="member-avatar" style="background:var(--cream);border:1px dashed var(--teal-soft);">+</div>
+            <div><div class="member-name" style="color:var(--gray);">添加家人</div><div class="member-role">爷爷 / 奶奶 / 孩子…</div></div>
+          </div>
+          <div style="font-size:12.5px;color:var(--gray);margin-top:18px;line-height:1.5;">最多支持 8 位家庭成员独立档案。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Privacy -->
+<section class="privacy">
+  <div class="container">
+    <span class="sec-tag">合规 & 隐私</span>
+    <h2 class="sec-title">健康数据，一定要慎重</h2>
+    <p class="sec-sub">从产品第一天就把这件事想清楚——本地优先、端到端加密、明确边界。</p>
+    <div class="privacy-grid">
+      <div class="privacy-card">
+        <div class="privacy-card-icon">🔐</div>
+        <h4>本地优先 · 端到端加密</h4>
+        <p>原始照片优先存本地，云端同步走端到端加密。我们看不到你的数据，也不卖给第三方。</p>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-card-icon">⚕️</div>
+        <h4>非医疗诊断 · 仅信息辅助</h4>
+        <p>我们只做"读懂数字 + 整理趋势"，不下诊断、不开处方。涉及决策的内容统一引导咨询医生。</p>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-card-icon">🗑️</div>
+        <h4>随时导出 · 一键删除</h4>
+        <p>所有档案支持 PDF / CSV 导出，账号注销即彻底删除全部数据，不留备份。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing" id="price">
+  <div class="container">
+    <span class="sec-tag">定价</span>
+    <h2 class="sec-title" style="text-align:center;">个人版始终免费 · 家庭版按需订阅</h2>
+    <p class="sec-sub" style="text-align:center;margin-left:auto;margin-right:auto;">从一个人开始，慢慢把全家人的健康都装进去。</p>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price-name">个人版</div>
+        <div class="price-num">¥0 <small>/ 永久</small></div>
+        <ul class="price-feat">
+          <li>1 位用户档案</li>
+          <li>无限化验单上传 + OCR</li>
+          <li>指标趋势图</li>
+          <li>大白话解读 · 每月 30 次</li>
+          <li>本地存储</li>
+        </ul>
+        <button class="price-cta" onclick="showToast('已为你创建个人档案～')">免费开始使用</button>
+      </div>
+      <div class="price-card featured">
+        <div class="price-name">家庭版</div>
+        <div class="price-num">¥39 <small>/ 月</small></div>
+        <ul class="price-feat">
+          <li>最多 8 位家庭成员档案</li>
+          <li>无限化验单 + 无限解读</li>
+          <li>多人趋势对比 / 家族慢病视角</li>
+          <li>云端加密同步 + PDF 导出</li>
+          <li>就医随身卡 / 体检前提醒</li>
+        </ul>
+        <button class="price-cta" onclick="showToast('家庭版 7 天免费试用已开通～')">7 天免费试用</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <h2>从家里那一抽屉化验单开始</h2>
+    <p>3 分钟传完一份，10 分钟把爸妈的体检报告全归档。下次去医院，再也不用翻照片。</p>
+    <button class="btn btn-primary" onclick="document.getElementById('try').scrollIntoView({behavior:'smooth'})">立即免费体验</button>
+  </div>
+</section>
+
+<footer>
+  <div>由 <strong>嘿哈土豆</strong> 设计 · <strong>海南大学</strong></div>
+  <div style="margin-top:8px;font-size:12px;opacity:0.5;">Health Timeline · 健康时间轴 — 信息辅助，非医疗诊断</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= Tabs ================= */
+const tabs = document.querySelectorAll('.try-tab');
+const stages = document.querySelectorAll('.stage');
+tabs.forEach(t => t.addEventListener('click', () => {
+  tabs.forEach(x => x.classList.remove('active'));
+  stages.forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  document.querySelector('.stage-' + t.dataset.stage).classList.add('active');
+}));
+
+/* ================= Stage 1: 上传 ================= */
+const uploadBox = document.getElementById('uploadBox');
+const fileInput = document.getElementById('fileInput');
+const uploadPreview = document.getElementById('uploadPreview');
+const previewImg = document.getElementById('previewImg');
+const ocrLoader = document.getElementById('ocrLoader');
+const ocrBar = document.getElementById('ocrBar');
+const ocrText = document.getElementById('ocrText');
+
+uploadBox.addEventListener('click', () => fileInput.click());
+uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.style.borderColor = 'var(--teal)'; });
+uploadBox.addEventListener('dragleave', e => { uploadBox.style.borderColor = 'var(--teal-soft)'; });
+uploadBox.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadBox.style.borderColor = 'var(--teal-soft)';
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      previewImg.src = e.target.result;
+      uploadPreview.style.display = 'block';
+      runOCR();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    uploadPreview.style.display = 'block';
+    previewImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 220'%3E%3Crect width='380' height='220' fill='%23F8FBF8' rx='14'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' font-family='sans-serif' font-size='18' fill='%232D9596'%3E📄 PDF 已接收，正在解析…%3C/text%3E%3C/svg%3E";
+    runOCR();
+  }
+}
+
+function runOCR() {
+  ocrLoader.style.display = 'block';
+  const stages = [
+    [20, '🔍 文字识别中…'],
+    [50, '🧠 字段结构化中…'],
+    [80, '📊 匹配参考范围…'],
+    [100, '✅ 解析完成，正在跳转结果…']
+  ];
+  let i = 0;
+  ocrBar.style.width = '0';
+  const tick = () => {
+    if (i >= stages.length) {
+      setTimeout(() => {
+        document.querySelector('.try-tab[data-stage="2"]').click();
+        ocrLoader.style.display = 'none';
+        showToast('已识别为「血脂四项」，跳转到 AI 解读');
+      }, 600);
+      return;
+    }
+    ocrBar.style.width = stages[i][0] + '%';
+    ocrText.textContent = stages[i][1];
+    i++;
+    setTimeout(tick, 700);
+  };
+  tick();
+}
+
+/* ================= Stage 3: 趋势图 ================= */
+const TREND = {
+  tc: { name: '总胆固醇', unit: 'mmol/L', ref: 5.2, refOp: '<',
+    points: [
+      { date: '2024-08', src: '社区医院', val: 4.9 },
+      { date: '2025-03', src: '体检中心', val: 5.1 },
+      { date: '2025-08', src: '三甲医院', val: 5.3 },
+      { date: '2025-12', src: '三甲医院', val: 5.4 },
+      { date: '2026-06', src: '体检中心', val: 5.8 }
+    ] },
+  ldl: { name: '低密度脂蛋白', unit: 'mmol/L', ref: 3.4, refOp: '<',
+    points: [
+      { date: '2024-08', src: '社区医院', val: 3.0 },
+      { date: '2025-03', src: '体检中心', val: 3.1 },
+      { date: '2025-08', src: '三甲医院', val: 3.3 },
+      { date: '2025-12', src: '三甲医院', val: 3.4 },
+      { date: '2026-06', src: '体检中心', val: 3.6 }
+    ] },
+  bp: { name: '收缩压', unit: 'mmHg', ref: 140, refOp: '<',
+    points: [
+      { date: '2024-08', src: '家用电子', val: 128 },
+      { date: '2025-03', src: '社区医院', val: 132 },
+      { date: '2025-08', src: '家用电子', val: 130 },
+      { date: '2025-12', src: '三甲医院', val: 135 },
+      { date: '2026-06', src: '体检中心', val: 138 }
+    ] },
+  glu: { name: '空腹血糖', unit: 'mmol/L', ref: 6.1, refOp: '<',
+    points: [
+      { date: '2024-08', src: '社区医院', val: 5.4 },
+      { date: '2025-03', src: '体检中心', val: 5.5 },
+      { date: '2025-08', src: '三甲医院', val: 5.6 },
+      { date: '2025-12', src: '三甲医院', val: 5.5 },
+      { date: '2026-06', src: '体检中心', val: 5.7 }
+    ] }
+};
+
+function renderChart(key) {
+  const d = TREND[key];
+  const svg = document.getElementById('chartSvg');
+  const w = 600, h = 220, padL = 50, padR = 30, padT = 30, padB = 40;
+  const xs = d.points.map((_, i) => padL + (w - padL - padR) * i / (d.points.length - 1));
+  const vals = d.points.map(p => p.val);
+  const vmin = Math.min(...vals, d.ref) * 0.92;
+  const vmax = Math.max(...vals, d.ref) * 1.05;
+  const ys = vals.map(v => padT + (h - padT - padB) * (1 - (v - vmin) / (vmax - vmin)));
+  const refY = padT + (h - padT - padB) * (1 - (d.ref - vmin) / (vmax - vmin));
+
+  let svgHtml = '';
+  // grid
+  for (let i = 0; i <= 3; i++) {
+    const gy = padT + (h - padT - padB) * i / 3;
+    svgHtml += `<line x1="${padL}" y1="${gy}" x2="${w - padR}" y2="${gy}" stroke="#E2EBE9" stroke-width="1"/>`;
+  }
+  // ref line
+  svgHtml += `<line x1="${padL}" y1="${refY}" x2="${w - padR}" y2="${refY}" stroke="#E8804C" stroke-width="1.5" stroke-dasharray="5,4"/>`;
+  svgHtml += `<text x="${w - padR - 4}" y="${refY - 5}" font-size="11" fill="#E8804C" text-anchor="end" font-weight="600">参考上限 ${d.ref}</text>`;
+  // line
+  const linePts = xs.map((x, i) => `${x},${ys[i]}`).join(' ');
+  svgHtml += `<polyline points="${linePts}" fill="none" stroke="#1F6D6E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+  // area
+  svgHtml += `<polygon points="${padL},${h - padB} ${linePts} ${w - padR},${h - padB}" fill="#9AD0C2" opacity="0.18"/>`;
+  // points
+  d.points.forEach((p, i) => {
+    const isHigh = (d.refOp === '<' && p.val > d.ref);
+    svgHtml += `<circle cx="${xs[i]}" cy="${ys[i]}" r="${i === d.points.length - 1 ? 6 : 4}" fill="${isHigh ? '#E8804C' : '#1F6D6E'}" stroke="#fff" stroke-width="2"/>`;
+    svgHtml += `<text x="${xs[i]}" y="${ys[i] - 12}" font-size="11" fill="#1B2A2B" text-anchor="middle" font-weight="700">${p.val}</text>`;
+    svgHtml += `<text x="${xs[i]}" y="${h - padB + 18}" font-size="10.5" fill="#5C6B6C" text-anchor="middle">${p.date}</text>`;
+  });
+  svg.innerHTML = svgHtml;
+
+  // meta
+  const last = d.points[d.points.length - 1].val;
+  const prev = d.points[d.points.length - 2].val;
+  const delta = (last - prev).toFixed(1);
+  const deltaCls = (d.refOp === '<' && last > d.ref) ? 'up' : (last < prev ? 'down' : '');
+  const deltaSign = delta > 0 ? '+' : '';
+  document.getElementById('chartMeta').innerHTML = `
+    <div class="chart-meta-item"><span class="lbl">最新数值</span><span class="v ${last > d.ref ? 'up' : ''}">${last} ${d.unit}</span></div>
+    <div class="chart-meta-item"><span class="lbl">vs 上次</span><span class="v ${deltaCls}">${deltaSign}${delta}</span></div>
+    <div class="chart-meta-item"><span class="lbl">参考</span><span class="v">${d.refOp} ${d.ref}</span></div>
+    <div class="chart-meta-item"><span class="lbl">数据点</span><span class="v">${d.points.length} 次</span></div>
+  `;
+
+  // 时间轴列表
+  let listHtml = '';
+  d.points.slice().reverse().forEach((p, i, arr) => {
+    const next = arr[i + 1];
+    let deltaTag = '';
+    if (next) {
+      const diff = (p.val - next.val).toFixed(1);
+      if (diff > 0) deltaTag = `<span class="tl-delta up">+${diff}</span>`;
+      else if (diff < 0) deltaTag = `<span class="tl-delta down">${diff}</span>`;
+      else deltaTag = `<span class="tl-delta flat">持平</span>`;
+    }
+    listHtml += `<div class="tl-event">
+      <div class="tl-date">${p.date}</div>
+      <div class="tl-content">
+        <span class="tl-source">${p.src}</span>
+        <span class="tl-val">${p.val} ${d.unit}</span>
+        ${deltaTag}
+      </div>
+    </div>`;
+  });
+  document.getElementById('timelineList').innerHTML = listHtml;
+}
+
+document.querySelectorAll('.ind-pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('.ind-pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    renderChart(p.dataset.ind);
+  });
+});
+renderChart('tc');
+
+/* ================= Stage 4: 问答 ================= */
+const ANSWERS = {
+  '我爸的血糖最近怎么样？': '<strong>张爸爸 · 空腹血糖近 5 次记录：</strong><br/>5.4 → 5.5 → 5.6 → 5.5 → <strong>5.7</strong> mmol/L<br/>整体在参考范围内（&lt; 6.1），但呈缓慢上升趋势。建议每 6 个月复查一次，并关注糖化血红蛋白（HbA1c）。<br/><span style="color:var(--warn);font-size:12px;">⚠️ 信息辅助，非诊断。</span>',
+  '总胆固醇 5.8 要紧吗？': '<strong>解读：</strong>总胆固醇 5.8 mmol/L 比参考上限 5.2 高出约 12%。<br/>需结合 LDL-C（低密度脂蛋白）一起看——您父亲 LDL-C 也偏高（3.6，参考 &lt; 3.4）。<br/><strong>趋势上：</strong>2024 → 2026 从 4.9 → 5.8，持续上升。<br/>建议生活方式干预（低脂饮食、规律运动）+ 3 个月后复查；若持续上升请咨询心内科或内分泌科医生。',
+  '这两年血脂变化趋势？': '<strong>张爸爸 · 2024.08 → 2026.06 共 5 次：</strong><br/>· 总胆固醇：4.9 → 5.8（<strong style="color:var(--warn);">↑ 18%</strong>）<br/>· 低密度脂蛋白：3.0 → 3.6（<strong style="color:var(--warn);">↑ 20%</strong>）<br/>· 高密度脂蛋白：1.4 → 1.32（基本平稳）<br/>· 甘油三酯：1.1 → 1.4（仍在正常范围）<br/><br/>整体属于"血脂指标缓慢恶化"，建议尽快做生活方式干预或咨询医生评估是否需要药物干预。',
+  '下次去医院该重点关注哪些指标？': '基于您家族档案的趋势，建议下次问诊时重点带上以下 3 类指标：<br/><br/>1. <strong>血脂四项</strong>（TC、LDL-C 持续偏高）<br/>2. <strong>颈动脉超声</strong>（评估血脂偏高对血管的累积影响）<br/>3. <strong>肝功能 + 肾功能</strong>（如果医生考虑用药，这两项是基线）<br/><br/>把这 3 类近 2 年的报告整理成一份 PDF 导出带过去，医生看一眼就能判断。'
+};
+
+const qaMsgs = document.getElementById('qaMsgs');
+const qaInput = document.getElementById('qaInput');
+
+function ask(q) {
+  const userMsg = document.createElement('div');
+  userMsg.className = 'qa-msg user';
+  userMsg.textContent = q;
+  qaMsgs.appendChild(userMsg);
+  qaMsgs.scrollTop = qaMsgs.scrollHeight;
+
+  setTimeout(() => {
+    const aiMsg = document.createElement('div');
+    aiMsg.className = 'qa-msg ai';
+    aiMsg.innerHTML = ANSWERS[q] || '我已记录这个问题，正在基于您的家庭档案分析…<br/><span style="color:var(--gray);font-size:12px;">（demo 中暂支持左侧示例问题，正式版接入大模型后可自由问答）</span>';
+    qaMsgs.appendChild(aiMsg);
+    qaMsgs.scrollTop = qaMsgs.scrollHeight;
+  }, 600);
+}
+
+document.querySelectorAll('.qa-q').forEach(el => {
+  el.addEventListener('click', () => ask(el.dataset.q));
+});
+document.getElementById('qaSend').addEventListener('click', () => {
+  const v = qaInput.value.trim();
+  if (!v) return;
+  ask(v);
+  qaInput.value = '';
+});
+qaInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('qaSend').click();
+});
+
+/* ================= Toast ================= */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* 平滑滚动 */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) { e.preventDefault(); el.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>
